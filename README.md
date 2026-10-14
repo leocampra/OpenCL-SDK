@@ -7,6 +7,9 @@ develop OpenCL applications:
 - OpenCL C++ bindings (`external/OpenCL-CLHPP/include`)
 - OpenCL Loader (`external/OpenCL-ICD-Loader`)
 - OpenCL utility library (`lib/include`)
+- OpenCL Compute library (`lib/include/CL/Compute`): parallel algorithms, memory pools,
+  a JIT program cache, a GPU hash map, compression and parallel file I/O,
+  modeled after Thrust/CUB, RMM, jitify, cuCollections, nvcomp and KvikIO (see [lib/Compute.md](lib/Compute.md))
 
 It also contains resources useful to OpenCL developers:
 
@@ -72,6 +75,7 @@ See your CMake documentation for more details.
 | CMAKE_BUILD_TYPE | STRING | Specifies the build type.  Does not affect multi-configuration generators, such as Visual Studio solution files.
 | CMAKE_INSTALL_PREFIX | PATH | Install directory prefix.
 | OPENCL_SDK_BUILD_UTILITY_LIBRARIES | BOOL | Enables building OpenCL SDK utility libraries.  Default: `TRUE`
+| OPENCL_SDK_BUILD_COMPUTE_LIBRARY | BOOL | Enables building the OpenCL Compute library. Default: `TRUE`
 | OPENCL_SDK_BUILD_SAMPLES | BOOL | Enables building OpenCL SDK samples.  Default: `TRUE`
 | OPENCL_SDK_BUILD_OPENGL_SAMPLES | BOOL | Enables building OpenCL SDK samples that interoperate with OpenGL.  Default: `FALSE`
 | OPENCL_SDK_BUILD_VULKAN_SAMPLES | BOOL | Enables building OpenCL SDK samples that interoperate with Vulkan.  Default: `FALSE`

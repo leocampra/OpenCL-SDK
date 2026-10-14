@@ -115,6 +115,108 @@ foreach(UTIL_LIB_NAME IN ITEMS Utils UtilsCpp)
   )
 endforeach()
 
+if(OPENCL_SDK_BUILD_COMPUTE_LIBRARY)
+  find_package(Threads REQUIRED)
+  add_library(OpenCLCompute
+    src/Compute/Algorithm.cpp
+    src/Compute/CApi.cpp
+    src/Compute/Compression.cpp
+    src/Compute/DeviceHeaders.cpp
+    src/Compute/FileIO.cpp
+    src/Compute/HashMap.cpp
+    src/Compute/MemoryResource.cpp
+    src/Compute/ProgramCache.cpp
+  )
+  add_library(OpenCL::Compute ALIAS OpenCLCompute)
+  generate_export_header(OpenCLCompute
+    EXPORT_MACRO_NAME COMPUTE_EXPORT
+    EXPORT_FILE_NAME OpenCLCompute_Export.h
+  )
+  target_include_directories(OpenCLCompute
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  )
+  target_link_libraries(OpenCLCompute
+    PUBLIC
+      OpenCL::HeadersCpp
+      OpenCL::OpenCL
+      Threads::Threads
+  )
+  # Kernels only need OpenCL C 1.2; the host side uses 1.2 entry points
+  # (e.g. CL_MAP_WRITE_INVALIDATE_REGION), so 1.2 runtimes are supported.
+  target_compile_definitions(OpenCLCompute
+    PUBLIC
+      CL_HPP_ENABLE_EXCEPTIONS
+      $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:OPENCLCOMPUTE_STATIC_DEFINE>
+    PRIVATE
+      CL_HPP_TARGET_OPENCL_VERSION=300
+      CL_HPP_MINIMUM_OPENCL_VERSION=120
+      CL_TARGET_OPENCL_VERSION=300
+  )
+  set_target_properties(OpenCLCompute
+    PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+      RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+      FOLDER "Libraries/Compute"
+      EXPORT_NAME Compute
+      DEBUG_POSTFIX d
+  )
+  install(
+    TARGETS OpenCLCompute
+    EXPORT OpenCLComputeTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT binary
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT binary
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT binary
+  )
+  install(
+    DIRECTORY include/CL/Compute
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CL
+    COMPONENT binary
+  )
+  install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenCLCompute_Export.h"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CL/Compute
+    COMPONENT binary
+  )
+  set(compute_config_dir ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/cmake/OpenCLCompute)
+  export(
+    EXPORT OpenCLComputeTargets
+    FILE ${compute_config_dir}/OpenCLComputeTargets.cmake
+    NAMESPACE OpenCL::
+  )
+  file(
+    WRITE ${compute_config_dir}/OpenCLComputeConfig.cmake
+    "include(CMakeFindDependencyMacro)\nfind_dependency(Threads)\ninclude(\"\${CMAKE_CURRENT_LIST_DIR}/OpenCLComputeTargets.cmake\")"
+  )
+  write_basic_package_version_file(
+    ${compute_config_dir}/OpenCLComputeConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+  )
+  install(
+    EXPORT OpenCLComputeTargets
+    FILE OpenCLComputeTargets.cmake
+    NAMESPACE OpenCL::
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/OpenCLCompute
+    COMPONENT binary
+  )
+  install(
+    FILES
+      ${compute_config_dir}/OpenCLComputeConfig.cmake
+      ${compute_config_dir}/OpenCLComputeConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/OpenCLCompute
+    COMPONENT binary
+  )
+
+  if(BUILD_TESTING)
+    add_subdirectory(test/Compute)
+  endif()
+endif()
+
 if(OPENCL_SDK_BUILD_SAMPLES)
   foreach(SDK_LIB_NAME IN ITEMS SDK SDKCpp)
     if(SDK_LIB_NAME STREQUAL SDK)

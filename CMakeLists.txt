@@ -24,6 +24,7 @@ project(OpenCL-SDK
 
 include(CMakeDependentOption)
 option(OPENCL_SDK_BUILD_UTILITY_LIBRARIES "Build utility libraries" ON)
+cmake_dependent_option(OPENCL_SDK_BUILD_COMPUTE_LIBRARY "Build the OpenCL Compute library (algorithms, memory pools, JIT cache, hash map, compression, file I/O)" ON OPENCL_SDK_BUILD_UTILITY_LIBRARIES OFF)
 cmake_dependent_option(OPENCL_SDK_BUILD_SAMPLES "Build sample code" ON OPENCL_SDK_BUILD_UTILITY_LIBRARIES OFF)
 cmake_dependent_option(OPENCL_SDK_BUILD_OPENGL_SAMPLES "Build OpenCL-OpenGL interop sample code" OFF OPENCL_SDK_BUILD_SAMPLES OFF)
 cmake_dependent_option(OPENCL_SDK_BUILD_VULKAN_SAMPLES "Build OpenCL-Vulkan interop sample code" OFF OPENCL_SDK_BUILD_SAMPLES OFF)
@@ -72,6 +73,9 @@ include("${PARENT_DIR}/OpenCLICDLoader/OpenCLICDLoaderConfig.cmake")
 include("${PARENT_DIR}/OpenCLHeadersCpp/OpenCLHeadersCppConfig.cmake")
 include("${PARENT_DIR}/OpenCLUtils/OpenCLUtilsConfig.cmake")
 include("${PARENT_DIR}/OpenCLUtilsCpp/OpenCLUtilsCppConfig.cmake")
+if(EXISTS "${PARENT_DIR}/OpenCLCompute/OpenCLComputeConfig.cmake")
+  include("${PARENT_DIR}/OpenCLCompute/OpenCLComputeConfig.cmake")
+endif()
   ]]
 )
 set(config_package_location ${CMAKE_INSTALL_DATADIR}/cmake/OpenCL)
